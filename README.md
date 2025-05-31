@@ -24,8 +24,8 @@
 ### 1. Cài môi trường Python
 
 ```bash
-git clone https://github.com/tenban/dich-may-anh-viet.git
-cd dich-may-anh-viet
+git clone https://github.com/xngip/mt_en_vi.git
+cd mt_en_vi
 python -m venv venv
 source venv/bin/activate  # hoặc .\venv\Scripts\activate trên Windows
 pip install -r requirements.txt
@@ -37,11 +37,11 @@ pip install -r requirements.txt
 python app.py
 ```
 
-Mặc định sẽ chạy ở `http://localhost:5000`.
+Mặc định sẽ chạy ở `http://127.0.0.1:5000`.
 
 ### 3. Mở giao diện web
 
-Mở `templates\index.html` trực tiếp bằng trình duyệt (hoặc dùng Live Server nếu dùng VSCode).
+Mở `templates/index.html` trực tiếp bằng trình duyệt (hoặc dùng Live Server nếu dùng VSCode).
 
 ---
 
@@ -53,7 +53,7 @@ Mở `templates\index.html` trực tiếp bằng trình duyệt (hoặc dùng Li
 
   ```bash
   cd train_model
-  python 'train_model\mt_en_vi.py'
+  python 'train_model/mt_en_vi.py'
   ```
 * **Dữ liệu:** Hơn 200 nghing câu Anh-Việt
 
