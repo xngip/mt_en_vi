@@ -55,6 +55,10 @@ Mở `templates/index.html` trực tiếp bằng trình duyệt (hoặc dùng Li
   cd train_model
   python 'train_model/mt_en_vi.py'
   ```
+
+  Hoặc chạy các cell ở file `train_model\mt_en_vi.ipynb`. Có thể up lên colab để chạy nhanh hơn. Ưu tiên cách này hơn
+
+
 * **Dữ liệu:** Hơn 200 nghing câu Anh-Việt
 
 Mô hình huấn luyện xong được lưu trong `weight_model`.
