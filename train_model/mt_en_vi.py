@@ -774,8 +774,6 @@ save_model_and_tokenizer(transformer, optimizer, en_tokenizer, vi_tokenizer)
 
 """# Load model"""
 
-!unzip /content/transformer_model_15_epoch.zip -d checkpoints
-
 def build_model_for_restore(transformer, optimizer):
     # Build cả mô hình để khớp checkpoint
     dummy_inp = tf.ones((1, ENCODER_LEN), dtype=tf.int32)

@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dịch Máy Anh-Việt</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="static/style.css"/>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-language"></i> Dịch Máy Anh - Việt</h1>
+            <p>Hệ thống Dịch Máy Anh-Việt được phát triển bởi Nhóm 1</p>
+        </div>
+
+        <div class="translation-container">
+            <div class="language-panel">
+                <div class="language-header">
+                    <div class="language-select">Tiếng Anh</div>
+                </div>
+                <textarea 
+                    class="text-area" 
+                    id="sourceText" 
+                    placeholder="Nhập văn bản tiếng anh để dịch..."
+                    maxlength="5000"
+                ></textarea>
+                <div class="char-count">
+                    <span id="charCount">0</span> / 5000 từ
+                </div>
+                <div class="controls">
+                    <button class="control-btn" onclick="clearSource()">
+                        <i class="fas fa-times"></i> Xóa
+                    </button>
+                    <button class="control-btn" onclick="speakText('source')">
+                        <i class="fas fa-volume-up"></i> Nghe
+                    </button>
+                    <button class="control-btn" onclick="copyText('source')">
+                        <i class="fas fa-copy"></i> Sao Chép
+                    </button>
+                </div>
+            </div>
+
+
+
+            <div class="language-panel">
+                <div class="language-header">
+                    <div class="language-select">Tiếng Việt</div>
+                </div>
+                <textarea 
+                    class="text-area" 
+                    id="targetText" 
+                    placeholder="Bản dịch..."
+                    readonly
+                ></textarea>
+                <div class="controls_1">
+                    <button class="control-btn" onclick="speakText('target')">
+                        <i class="fas fa-volume-up"></i> Nghe
+                    </button>
+                    <button class="control-btn" onclick="copyText('target')">
+                        <i class="fas fa-copy"></i> Sao Chép
+                    </button>
+                    <button class="control-btn" onclick="shareTranslation()">
+                        <i class="fas fa-share"></i> Chia Sẻ
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+
+        <button class="translate-btn" onclick="translateText()" id="translateBtn">
+            <i class="fas fa-language"></i> Dịch
+        </button>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            Processing translation...
+        </div>
+
+        <div class="stats">
+            <p>📊 Translated <strong id="translationCount">0</strong> sentences in this session</p>
+        </div>
+    </div>
+
+    <script>
+        let translationCount = 0;
+        let currentRequest = null;
+
+        // Cập nhật số ký tự
+        document.getElementById('sourceText').addEventListener('input', function() {
+            const count = this.value.length;
+            document.getElementById('charCount').textContent = count;
+        });
+
+        // Hàm dịch chính
+        async function translateText() {
+            const sourceText = document.getElementById('sourceText').value.trim();
+            
+            if (!sourceText) {
+                alert('Vui lòng nhập văn bản tiếng Anh!');
+                return;
+            }
+
+            // Hiển thị loading
+            document.getElementById('loading').classList.add('active');
+            document.getElementById('translateBtn').disabled = true;
+            document.getElementById('targetText').value = '';
+
+            try {
+                const response = await fetch("http://localhost:5000/translate", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ sentence: sourceText })
+                });
+
+                const data = await response.json();
+                const translation = data.translation || "Lỗi khi dịch.";
+
+                await typeText(translation, 'targetText');
+
+                translationCount++;
+                document.getElementById('translationCount').textContent = translationCount;
+
+            } catch (error) {
+                console.error('Translation error:', error);
+                document.getElementById('targetText').value = 'Có lỗi xảy ra khi dịch. Hãy thử lại!';
+            } finally {
+                document.getElementById('loading').classList.remove('active');
+                document.getElementById('translateBtn').disabled = false;
+            }
+        }
+
+
+
+        // Hiệu ứng typing cho bản dịch
+        async function typeText(text, elementId) {
+            const element = document.getElementById(elementId);
+            element.value = '';
+            
+            for (let i = 0; i < text.length; i++) {
+                element.value += text[i];
+                await new Promise(resolve => setTimeout(resolve, 30));
+            }
+        }
+
+        // Đọc văn bản
+        function speakText(type) {
+            const text = document.getElementById(type === 'source' ? 'sourceText' : 'targetText').value;
+            const lang = type === 'source' ? 'en-US' : 'vi-VN';
+            
+            if (!text.trim()) {
+                alert('No text to read!');
+                return;
+            }
+            
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = lang;
+            speechSynthesis.speak(utterance);
+        }
+
+        // Xóa văn bản nguồn
+        function clearSource() {
+            document.getElementById('sourceText').value = '';
+            document.getElementById('targetText').value = '';
+            document.getElementById('charCount').textContent = '0';
+        }
+
+        // Sao chép văn bản
+        async function copyText(type) {
+            const text = document.getElementById(type === 'source' ? 'sourceText' : 'targetText').value;
+            
+            if (!text.trim()) {
+                alert('No text to copy!');
+                return;
+            }
+            
+            try {
+                await navigator.clipboard.writeText(text);
+                
+                // Hiển thị thông báo
+                const btn = event.target.closest('.control-btn');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-check"></i> Copied';
+                btn.style.background = '#4caf50';
+                btn.style.color = 'white';
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.style.background = 'transparent';
+                    btn.style.color = '#4285f4';
+                }, 2000);
+            } catch (err) {
+                alert('Cannot copy text!');
+            }
+        }
+
+        // Chia sẻ bản dịch
+        function shareTranslation() {
+            const sourceText = document.getElementById('sourceText').value;
+            const targetText = document.getElementById('targetText').value;
+            
+            if (!sourceText.trim() || !targetText.trim()) {
+                alert('Need both original text and translation to share!');
+                return;
+            }
+            
+            const shareText = `Original: ${sourceText}\nTranslation: ${targetText}\n\n--- Translated by AI Translation ---`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Translation',
+                    text: shareText
+                });
+            } else {
+                // Fallback: copy to clipboard
+                navigator.clipboard.writeText(shareText).then(() => {
+                    alert('Translation copied for sharing!');
+                });
+            }
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey || e.metaKey) {
+                switch(e.key) {
+                    case 'Enter':
+                        e.preventDefault();
+                        translateText();
+                        break;
+                    case 'k':
+                        e.preventDefault();
+                        document.getElementById('sourceText').focus();
+                        break;
+                }
+            }
+        });
+
+        // Initialize
+        document.getElementById('sourceText').focus();
+    </script>
+</body>
+</html>
